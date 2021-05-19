@@ -3,7 +3,7 @@
     <swiper :options="swiperOption"
             v-if="showSwiper">
       <swiper-slide v-for="item of list"
-                    :key="item.id">
+                    :key="item.sort">
         <a :href="item.link">
           <img class="img-wrapper"
                :src="item.image"
@@ -35,7 +35,11 @@ export default {
       swiperOption: {
         pagination: '.swiper-pagination',
         loop: true,
-        autoplay: 3000
+        autoplayDisableOnInteraction: false,
+        autoplay: 3000,
+        // autoplay: {
+        //   disableOnInteraction: false,
+        // }
       }
     }
   },
