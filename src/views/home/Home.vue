@@ -7,8 +7,10 @@
     <home-recommend :list='recommend'></home-recommend>
     <home-feature></home-feature>
     <tab-contorl class="tab-control"
-                 :titles="['精选','推荐','搜索']"></tab-contorl>
-    <goods-list :goods="goods.pop.list"></goods-list>
+                 :titles="['精选','推荐','搜索']"
+                 @handleItemClick="ItemClick">
+    </tab-contorl>
+    <goods-list :goods="showGoods"></goods-list>
     <ul>
       <li>1</li>
       <li>2</li>
@@ -65,13 +67,13 @@
 
 <script>
 import NavBar from 'components/common/navbar/NavBar.vue'
-import { getHomeMultidata, getHomeGoods } from 'network/home'
 import HomeSwiper from './components/swiper'
 import HomeRecommend from './components/HomeRecommend.vue'
 import HomeFeature from './components/HomeFeature'
 import TabContorl from 'components/content/tabControl/TabControl.vue'
 import GoodsList from '../../components/content/goods/GoodsList.vue'
 
+import { getHomeMultidata, getHomeGoods } from 'network/home'
 export default {
   components: {
     NavBar,
@@ -90,7 +92,8 @@ export default {
         'pop': { page: 0, list: [] },
         'new': { page: 0, list: [] },
         'sell': { page: 0, list: [] }
-      }
+      },
+      currentType: 'pop'
     }
   },
   created () {
@@ -100,7 +103,34 @@ export default {
     this.getHomeGoods('sell')
 
   },
+  computed: {
+    showGoods () {
+      return this.goods[this.currentType].list
+    }
+  },
   methods: {
+    /**
+     * 事件监听相关的方法
+     */
+    ItemClick (index) {
+      // console.log(index);
+      switch (index) {
+        case 0:
+          this.currentType = 'pop'
+          break
+        case 1:
+          this.currentType = 'new'
+          break
+        case 2:
+          this.currentType = 'sell'
+          break
+      }
+    },
+
+
+    /*
+    *网络请求相关的方法
+    */
     getHomeMultidata () {
       getHomeMultidata().then(res => {
 
@@ -138,6 +168,7 @@ export default {
 }
 .tab-control {
   position: sticky;
-  top: 44px;
+  top: 43px;
+  z-index: 99;
 }
 </style>
