@@ -1,6 +1,7 @@
 <template>
   <div class="goodsitem">
     <img :src="goodsitem.show.img"
+         @load="imgload"
          alt="">
     <div class="good-info">
       <p>{{goodsitem.title}}</p>
@@ -16,6 +17,11 @@ export default {
   props: {
     goodsitem: {
       type: Object
+    }
+  },
+  methods: {
+    imgload () {       //监听每个小组件中的图片是否加载好 加载好把事件发出去（利用bus） 调用refresh()进行刷新，让better-scroll重新计算可滚动区域高度
+      this.$bus.$emit('itemImageLoad')
     }
   }
 }

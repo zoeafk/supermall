@@ -1,68 +1,29 @@
 <template>
+
   <div id="home">
     <nav-bar class="home-nav">
-      <div slot="middle">购物街</div>
+      <div slot="middle">买买买</div>
     </nav-bar>
-    <home-swiper :list='banner'></home-swiper>
-    <home-recommend :list='recommend'></home-recommend>
-    <home-feature></home-feature>
-    <tab-contorl class="tab-control"
-                 :titles="['精选','推荐','搜索']"
-                 @handleItemClick="ItemClick">
-    </tab-contorl>
-    <goods-list :goods="showGoods"></goods-list>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-      <li>5</li>
-    </ul>
+    <scroll class="content"
+            ref="Scroll"
+            :probeType='3'
+            :pull-up-load='true'
+            @scroll='contentScroll'>
+      <!-- @pullingUp='loadmore' -->
+      <home-swiper :list='banner'></home-swiper>
+      <home-recommend :list='recommend'></home-recommend>
+      <home-feature></home-feature>
+      <tab-contorl class="tab-control"
+                   :titles="['精选','推荐','搜索']"
+                   @handleItemClick="ItemClick">
+      </tab-contorl>
+      <goods-list :goods="showGoods"></goods-list>
+    </scroll>
+    <back-top @click.native="backClick"
+              v-show="showbtn">
+    </back-top>
   </div>
+
 </template>
 
 <script>
@@ -72,8 +33,11 @@ import HomeRecommend from './components/HomeRecommend.vue'
 import HomeFeature from './components/HomeFeature'
 import TabContorl from 'components/content/tabControl/TabControl.vue'
 import GoodsList from '../../components/content/goods/GoodsList.vue'
+import Scroll from 'components/common/scroll/Scroll.vue'
+import BackTop from 'components/content/backtop/BackTop.vue'
 
 import { getHomeMultidata, getHomeGoods } from 'network/home'
+
 export default {
   components: {
     NavBar,
@@ -82,6 +46,8 @@ export default {
     HomeFeature,
     TabContorl,
     GoodsList,
+    Scroll,
+    BackTop,
   },
   name: 'Home',
   data () {
@@ -93,7 +59,8 @@ export default {
         'new': { page: 0, list: [] },
         'sell': { page: 0, list: [] }
       },
-      currentType: 'pop'
+      currentType: 'pop',
+      showbtn: false
     }
   },
   created () {
@@ -102,6 +69,10 @@ export default {
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
 
+    // 监听小组件加载  在main.js中将$bus挂载到原型上
+    this.$bus.$on('itemImageLoad', () => {
+      this.$refs.Scroll.refresh()
+    })
   },
   computed: {
     showGoods () {
@@ -127,7 +98,17 @@ export default {
       }
     },
 
+    backClick () {
+      this.$refs.Scroll.backtop(0, 0)
+    },
+    contentScroll (position) {
+      this.showbtn = (-position.y) > 1000 ? true : false
+    },
+    //上拉加载更多
+    // loadmore () {
+    //   this.getHomeGoods(this.currentType)
 
+    // },
     /*
     *网络请求相关的方法
     */
@@ -144,8 +125,8 @@ export default {
       getHomeGoods(type, page).then(res => {
 
         this.goods[type].list.push(...res.data.data.list)
-        this.goods[type].page = page
-
+        this.goods[type].page += 1
+        // this.$refs.Scroll.finishPullUp()    //this.$refs.Scroll.Scroll.finishPullUp() 
       })
     }
   }
@@ -155,6 +136,9 @@ export default {
 <style scoped>
 #home {
   padding-top: 44px;
+  height: 100vh;
+  /* position: relative; */
+
   /* padding-bottom: 800px; */
 }
 .home-nav {
@@ -170,5 +154,15 @@ export default {
   position: sticky;
   top: 43px;
   z-index: 99;
+}
+.content {
+  position: absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
+  /* height: calc(100% - 93px);
+  overflow: hidden;
+  margin-top: 44px; */
 }
 </style>

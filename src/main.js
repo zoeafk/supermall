@@ -5,6 +5,7 @@ import store from './store'
 import VueAwesomeSwiper from 'vue-awesome-swiper'
 import 'swiper/dist/css/swiper.css'
 
+Vue.prototype.$bus=new Vue()
 
 Vue.use(VueAwesomeSwiper)
 Vue.config.productionTip = false
