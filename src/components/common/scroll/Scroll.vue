@@ -16,10 +16,10 @@ export default {
       type: Number,
       default: 0
     },
-    // pullUpLoad: {
-    //   type: Boolean,
-    //   default: false   //默认不需要上拉加载
-    // }
+    pullUpLoad: {
+      type: Boolean,
+      default: false   //默认不需要上拉加载
+    }
   },
   data () {
     return {
@@ -28,20 +28,20 @@ export default {
   },
   methods: {
     backtop (x, y, time = 300) {
-      return this.Scroll.scrollTo(x, y, time)
+      this.Scroll$ && this.Scroll.scrollTo(x, y, time)  //防止scroll对象还未初始化 便被调用 （null.scrollTo）  导致的bug
     },
     finishPullUp () {
-      this.Scroll.finishPullUp()
+      this.Scroll && this.Scroll.finishPullUp()
     },
     refresh () {
-      this.Scroll.refresh()
+      this.Scroll && this.Scroll.refresh()  //先判断有没有值，有值的情况下调用refresh（）
     }
   },
   mounted () {
     // 创建better-scroll对象
     this.Scroll = new BScroll(this.$refs.wrap, {
       probeType: this.probeType,
-      pullUpLoad: this.pullUpLoad,              //触发上拉事件
+      pullUpLoad: this.pullUpLoad,              //触发上拉事件  监听滚到底部
       // observeDOM: true,                      //使用了bus总线解决图片未加载好导致的Bug
       // observeImage: true,
       click: true,
@@ -53,11 +53,10 @@ export default {
         this.$emit('scroll', position)
       })
 
-    //监听上拉事件
-    // this.Scroll.on('pullingUp', () => {
-    //   this.$emit('pullingUp')
-    // }
-    // )
+    //监听上拉事件 scroll滚动底部
+    this.Scroll.on('pullingUp', () => {
+      this.$emit('pullingUp')
+    })
   }
 }
 </script>

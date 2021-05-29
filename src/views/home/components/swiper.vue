@@ -7,7 +7,8 @@
         <a :href="item.link">
           <img class="img-wrapper"
                :src="item.image"
-               alt="">
+               alt=""
+               @load="imgload">
         </a>
       </swiper-slide>
 
@@ -40,12 +41,21 @@ export default {
         // autoplay: {
         //   disableOnInteraction: false,
         // }
-      }
+      },
+      isload: false
     }
   },
   computed: {
     showSwiper () {
       return this.list.length
+    }
+  },
+  methods: {
+    imgload () {
+      if (!this.isload) {        //因为4张图片 会发送4次 而只需要一个高度即可 发送一次
+        this.$emit('imgload')
+      }
+      this.isload = true
     }
   }
 }

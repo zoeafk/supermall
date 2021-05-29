@@ -1,7 +1,10 @@
 <template>
   <div id="app">
-    <router-view />
-    <main-tab-bar />
+    <keep-alive>
+      <router-view />
+    </keep-alive>
+
+    <main-tab-bar class="tabbar" />
   </div>
 </template>
 <script>
@@ -11,6 +14,6 @@ export default {
   name: 'app',
 }
 </script>
-<style>
+<style scoped>
 @import './assets/css/base.css';
 </style>

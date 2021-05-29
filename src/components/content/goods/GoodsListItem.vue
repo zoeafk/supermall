@@ -1,5 +1,6 @@
 <template>
-  <div class="goodsitem">
+  <div class="goodsitem"
+       @click="itemClick">
     <img :src="goodsitem.show.img"
          @load="imgload"
          alt="">
@@ -20,8 +21,11 @@ export default {
     }
   },
   methods: {
-    imgload () {       //监听每个小组件中的图片是否加载好 加载好把事件发出去（利用bus） 调用refresh()进行刷新，让better-scroll重新计算可滚动区域高度
+    imgload () {        //监听每个小组件中的图片是否加载好 加载好把事件发出去（利用bus） 调用refresh()进行刷新，让better-scroll重新计算可滚动区域高度
       this.$bus.$emit('itemImageLoad')
+    },
+    itemClick () {
+      this.$router.push('/detail/' + this.goodsitem.iid)
     }
   }
 }

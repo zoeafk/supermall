@@ -1,21 +1,27 @@
 <template>
-
   <div id="home">
     <nav-bar class="home-nav">
       <div slot="middle">买买买</div>
     </nav-bar>
+    <tab-contorl :titles="['精选','推荐','搜索']"
+                 @handleItemClick="ItemClick"
+                 ref='tabcon1'
+                 class="tab-control"
+                 v-show="isTabFixed">
+    </tab-contorl>
     <scroll class="content"
             ref="Scroll"
             :probeType='3'
             :pull-up-load='true'
-            @scroll='contentScroll'>
-      <!-- @pullingUp='loadmore' -->
-      <home-swiper :list='banner'></home-swiper>
+            @scroll='contentScroll'
+            @pullingUp='loadmore'>
+      <home-swiper :list='banner'
+                   @imgload='handImgLoad'></home-swiper>
       <home-recommend :list='recommend'></home-recommend>
       <home-feature></home-feature>
-      <tab-contorl class="tab-control"
-                   :titles="['精选','推荐','搜索']"
-                   @handleItemClick="ItemClick">
+      <tab-contorl :titles="['精选','推荐','搜索']"
+                   @handleItemClick="ItemClick"
+                   ref='tabcon2'>
       </tab-contorl>
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
@@ -60,7 +66,14 @@ export default {
         'sell': { page: 0, list: [] }
       },
       currentType: 'pop',
-      showbtn: false
+      showbtn: false,
+      TabContorlTop: 0,
+      isTabFixed: false
+    }
+  },
+  computed: {
+    showGoods () {
+      return this.goods[this.currentType].list
     }
   },
   created () {
@@ -69,22 +82,43 @@ export default {
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
 
+
+  },
+  mounted () {
     // 监听小组件加载  在main.js中将$bus挂载到原型上
+    const refresh = this.debounce(this.$refs.Scroll.refresh, 200)
     this.$bus.$on('itemImageLoad', () => {
-      this.$refs.Scroll.refresh()
+      refresh()
     })
   },
-  computed: {
-    showGoods () {
-      return this.goods[this.currentType].list
-    }
+  //使用了keep alive  保证首页被切换后保持原来的状态
+  activated () {
+    this.$refs.Scroll.backtop(0, this.saveY, 0)
+    this.$refs.Scroll.refresh()
+  },
+  deactivated () {
+    this.saveY = this.$refs.Scroll.Scroll.y
   },
   methods: {
     /**
      * 事件监听相关的方法
      */
-    ItemClick (index) {
-      // console.log(index);
+
+    debounce (func, delay) {      //防抖
+      let timer = null
+      return function (...args) {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+          func.apply(this, args)
+        }, delay)
+      }
+    },
+
+    handImgLoad () {        //监听轮播图片加载 取得tabcontorl offsettop的值
+      this.TabContorlTop = this.$refs.tabcon2.$el.offsetTop
+    },
+
+    ItemClick (index) {     //监听点击 通过index 判断tabcontorl类型 赋给currentType(记录谁被选中)
       switch (index) {
         case 0:
           this.currentType = 'pop'
@@ -96,19 +130,25 @@ export default {
           this.currentType = 'sell'
           break
       }
+      //使最新的点击与index保持一致
+      this.$refs.tabcon1.currentIndex = index;
+      this.$refs.tabcon2.currentIndex = index;
     },
 
     backClick () {
-      this.$refs.Scroll.backtop(0, 0)
+      this.$refs.Scroll.Scroll.scrollTo(0, 0, 300)
     },
     contentScroll (position) {
+      //判断Backtop是否显示
       this.showbtn = (-position.y) > 1000 ? true : false
+      //决定tabcontrol是否吸顶（position:fixed）
+      this.isTabFixed = (-position.y) > this.TabContorlTop
     },
-    //上拉加载更多
-    // loadmore () {
-    //   this.getHomeGoods(this.currentType)
 
-    // },
+    loadmore () {         //上拉加载更多
+      this.getHomeGoods(this.currentType)
+    },
+
     /*
     *网络请求相关的方法
     */
@@ -126,7 +166,7 @@ export default {
 
         this.goods[type].list.push(...res.data.data.list)
         this.goods[type].page += 1
-        // this.$refs.Scroll.finishPullUp()    //this.$refs.Scroll.Scroll.finishPullUp() 
+        this.$refs.Scroll.finishPullUp()    //this.$refs.Scroll.Scroll.finishPullUp() 
       })
     }
   }
@@ -135,25 +175,20 @@ export default {
 
 <style scoped>
 #home {
-  padding-top: 44px;
   height: 100vh;
-  /* position: relative; */
+  position: relative;
 
   /* padding-bottom: 800px; */
 }
 .home-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  z-index: 9;
   background-color: var(--color-tint);
   color: #fff;
-  z-index: 9;
 }
 .tab-control {
-  position: sticky;
-  top: 43px;
-  z-index: 99;
+  position: relative;
+  z-index: 9;
 }
 .content {
   position: absolute;
@@ -165,4 +200,10 @@ export default {
   overflow: hidden;
   margin-top: 44px; */
 }
+/* .fixed {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+} */
 </style>
