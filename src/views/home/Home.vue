@@ -1,5 +1,6 @@
 <template>
-  <div id="home">
+  <div id="home"
+       @mousewheel.prevent>
     <nav-bar class="home-nav">
       <div slot="middle">买买买</div>
     </nav-bar>
@@ -93,11 +94,11 @@ export default {
   },
   //使用了keep alive  保证首页被切换后保持原来的状态
   activated () {
-    this.$refs.Scroll.backtop(0, this.saveY, 0)
+    this.$refs.Scroll.backtop(0, this.saveY, 0)  //进入时y值设置回去
     this.$refs.Scroll.refresh()
   },
   deactivated () {
-    this.saveY = this.$refs.Scroll.Scroll.y
+    this.saveY = this.$refs.Scroll.Scroll.y  //离开时保存y值
   },
   methods: {
     /**

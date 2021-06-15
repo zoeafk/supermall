@@ -42,8 +42,8 @@ export default {
     this.Scroll = new BScroll(this.$refs.wrap, {
       probeType: this.probeType,
       pullUpLoad: this.pullUpLoad,              //触发上拉事件  监听滚到底部
-      // observeDOM: true,                      //使用了bus总线解决图片未加载好导致的Bug
-      // observeImage: true,
+      observeDOM: true,                      //使用了bus总线解决图片未加载好导致的Bug
+      observeImage: true,
       click: true,
 
 

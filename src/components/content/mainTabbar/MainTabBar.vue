@@ -54,6 +54,6 @@ export default {
 
 <style scoped>
 .tabbar {
-  z-index: 99999;
+  z-index: 9;
 }
 </style>
