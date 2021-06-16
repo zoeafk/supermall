@@ -1,16 +1,22 @@
 <template>
   <div id="detail"
        @mousewheel.prevent>
-    <detail-title class="detail-title"></detail-title>
+    <detail-title class="detail-title"
+                  @detailIndex='titleClick'></detail-title>
     <scroll class="content"
             :probeType='3'
-            :pull-up-load='true'>
+            :pull-up-load='true'
+            ref="Scroll">
       <detail-swiper :top-images='topImages'></detail-swiper>
       <detail-base-info :goods='goods'></detail-base-info>
       <detail-shop-info :shop='shop'></detail-shop-info>
       <detail-goods-info :detailInfo='detailInfo'></detail-goods-info>
-      <detail-param-info :paramInfo='goodsParam'></detail-param-info>
-      <detail-comment-info :commentInfo='commonInfo'></detail-comment-info>
+      <detail-param-info :paramInfo='goodsParam'
+                         ref="params"></detail-param-info>
+      <detail-comment-info :commentInfo='commonInfo'
+                           ref="comment"></detail-comment-info>
+      <goods-list :goods='recommend'
+                  ref="recommend"></goods-list>
     </scroll>
   </div>
 </template>
@@ -22,10 +28,11 @@ import DetailBaseInfo from './childcomps/DetailBaseInfo.vue'
 import DetailShopInfo from './childcomps/DetailShopInfo.vue'
 import Scroll from '../../components/common/scroll/Scroll.vue'
 
-import { getDetail, Goods, Shop, GoodsParam } from '../../network/detail'
+import { getDetail, Goods, Shop, GoodsParam, getRecommend } from '../../network/detail'
 import DetailGoodsInfo from './childcomps/DetailGoodsInfo.vue'
 import DetailParamInfo from './childcomps/DetailParamInfo.vue'
 import DetailCommentInfo from './childcomps/DetailCommentInfo.vue'
+import GoodsList from '../../components/content/goods/GoodsList.vue'
 
 export default {
 
@@ -39,6 +46,7 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     DetailCommentInfo,
+    GoodsList,
   },
   data () {
     return {
@@ -48,7 +56,10 @@ export default {
       shop: {},
       detailInfo: {},
       goodsParam: {},
-      commonInfo: {}
+      commonInfo: {},
+      recommend: [],
+      itemImglistener: null,
+      Yvalue: []
     }
   },
   created () {
@@ -59,7 +70,7 @@ export default {
       //1.获取顶部的图片轮播图
       const data = res.data.result
       this.topImages = data.itemInfo.topImages
-      console.log(res);
+      // console.log(res);
       //2.获取商品信息
       this.goods = new Goods(data.itemInfo, data.columns, data.shopInfo.services) //为了把一个复杂的类整合到一起
       //3.创建商家信息对象
@@ -73,9 +84,51 @@ export default {
         this.commonInfo = data.rate.list[0]
       }
     })
+    //3.请求推荐数据
+    getRecommend().then((res) => {
+      this.recommend = res.data.data.list
+      console.log(res);
+    })
+    //4.
+  },
+  mounted () {
+    const refresh = this.debounce(this.$refs.Scroll.refresh, 200)
 
-  }
+    this.itemImglistener = () => {
+      refresh()
+    }
+    this.$bus.$on('itemImageLoad', this.itemImglistener)
+  },
+  updated () {
+    this.$nextTick(() => {
+      this.Yvalue = []
+      this.Yvalue.push(0)
+      this.Yvalue.push(this.$refs.params.$el.offsetTop)
+      this.Yvalue.push(this.$refs.comment.$el.offsetTop)
+      this.Yvalue.push(this.$refs.recommend.$el.offsetTop)
+      console.log(this.Yvalue);
+    })
+  },
+  destroyed () {
+    this.$bus.$off('itemImageLoad', this.itemImglistener)
+  },
+  methods: {
+    debounce (func, delay) {      //防抖
+      let timer = null
+      return function (...args) {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+          func.apply(this, args)
+        }, delay)
+      }
+    },
+    titleClick (index) {
+      this.$refs.Scroll.Scroll.scrollTo(0, -this.Yvalue[index], 100)
+    }
+  },
+
 }
+
 </script>
 
 <style scoped>

@@ -8,6 +8,12 @@ export function getDetail(iid){
 	})
 }
 
+export function getRecommend (){
+  return request2({
+    url:'/recommend'
+  })
+}
+
 //对复杂数据进行了整合
 export class Goods {
   constructor(itemInfo, columns, services) {

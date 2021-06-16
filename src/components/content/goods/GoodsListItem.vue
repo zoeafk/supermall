@@ -1,7 +1,7 @@
 <template>
   <div class="goodsitem"
        @click="itemClick">
-    <img :src="goodsitem.show.img"
+    <img :src="showImage"
          @load="imgload"
          alt="">
     <div class="good-info">
@@ -18,6 +18,11 @@ export default {
   props: {
     goodsitem: {
       type: Object
+    }
+  },
+  computed: {
+    showImage () {
+      return this.goodsitem.image || this.goodsitem.show.img
     }
   },
   methods: {

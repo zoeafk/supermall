@@ -69,7 +69,8 @@ export default {
       currentType: 'pop',
       showbtn: false,
       TabContorlTop: 0,
-      isTabFixed: false
+      isTabFixed: false,
+      itemImglistener: null
     }
   },
   computed: {
@@ -88,17 +89,23 @@ export default {
   mounted () {
     // 监听小组件加载  在main.js中将$bus挂载到原型上
     const refresh = this.debounce(this.$refs.Scroll.refresh, 200)
-    this.$bus.$on('itemImageLoad', () => {
+
+    this.itemImglistener = () => {              //函数命名 方便deactivated中，取消全局事件中 函数名方便
       refresh()
-    })
+    }
+    this.$bus.$on('itemImageLoad', this.itemImglistener)
   },
   //使用了keep alive  保证首页被切换后保持原来的状态
   activated () {
+
     this.$refs.Scroll.backtop(0, this.saveY, 0)  //进入时y值设置回去
     this.$refs.Scroll.refresh()
   },
   deactivated () {
-    this.saveY = this.$refs.Scroll.Scroll.y  //离开时保存y值
+    //离开时保存y值
+    this.saveY = this.$refs.Scroll.Scroll.y
+    //取消全局事件监听
+    this.$bus.$off('itemImageLoad', this.itemImglistener)          //移除itemImageLoad事件 （在detail页面中，没必要监听itemImageLoad）
   },
   methods: {
     /**
