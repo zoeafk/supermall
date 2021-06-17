@@ -2,15 +2,18 @@
   <div id="detail"
        @mousewheel.prevent>
     <detail-title class="detail-title"
-                  @detailIndex='titleClick'></detail-title>
+                  @detailIndex='titleClick'
+                  ref="nav"></detail-title>
     <scroll class="content"
-            :probeType='3'
+            :probe-type='3'
             :pull-up-load='true'
-            ref="Scroll">
+            ref="Scroll"
+            @scroll='scroll'>
       <detail-swiper :top-images='topImages'></detail-swiper>
       <detail-base-info :goods='goods'></detail-base-info>
       <detail-shop-info :shop='shop'></detail-shop-info>
-      <detail-goods-info :detailInfo='detailInfo'></detail-goods-info>
+      <detail-goods-info :detailInfo='detailInfo'
+                         @imageLoad='imageLoad'></detail-goods-info>
       <detail-param-info :paramInfo='goodsParam'
                          ref="params"></detail-param-info>
       <detail-comment-info :commentInfo='commonInfo'
@@ -18,6 +21,10 @@
       <goods-list :goods='recommend'
                   ref="recommend"></goods-list>
     </scroll>
+    <detail-bottom-bar @addCart='addCart'></detail-bottom-bar>
+    <back-top @click.native="backClick"
+              v-show="showbtn">
+    </back-top>
   </div>
 </template>
 
@@ -33,7 +40,8 @@ import DetailGoodsInfo from './childcomps/DetailGoodsInfo.vue'
 import DetailParamInfo from './childcomps/DetailParamInfo.vue'
 import DetailCommentInfo from './childcomps/DetailCommentInfo.vue'
 import GoodsList from '../../components/content/goods/GoodsList.vue'
-
+import DetailBottomBar from './childcomps/DetailBottomBar.vue'
+import BackTop from 'components/content/backtop/BackTop.vue'
 export default {
 
   name: 'Detail',
@@ -47,6 +55,8 @@ export default {
     DetailParamInfo,
     DetailCommentInfo,
     GoodsList,
+    DetailBottomBar,
+    BackTop
   },
   data () {
     return {
@@ -59,7 +69,10 @@ export default {
       commonInfo: {},
       recommend: [],
       itemImglistener: null,
-      Yvalue: []
+      Yvalue: [],
+      reverseYvalue: [],
+      currentIndex: 0,
+      showbtn: false,
     }
   },
   created () {
@@ -89,7 +102,6 @@ export default {
       this.recommend = res.data.data.list
       console.log(res);
     })
-    //4.
   },
   mounted () {
     const refresh = this.debounce(this.$refs.Scroll.refresh, 200)
@@ -98,16 +110,6 @@ export default {
       refresh()
     }
     this.$bus.$on('itemImageLoad', this.itemImglistener)
-  },
-  updated () {
-    this.$nextTick(() => {
-      this.Yvalue = []
-      this.Yvalue.push(0)
-      this.Yvalue.push(this.$refs.params.$el.offsetTop)
-      this.Yvalue.push(this.$refs.comment.$el.offsetTop)
-      this.Yvalue.push(this.$refs.recommend.$el.offsetTop)
-      console.log(this.Yvalue);
-    })
   },
   destroyed () {
     this.$bus.$off('itemImageLoad', this.itemImglistener)
@@ -122,11 +124,49 @@ export default {
         }, delay)
       }
     },
+    //监听详情页图片加载 加载完毕 获取y值
+    imageLoad () {
+      this.Yvalue = []
+      this.Yvalue.push(0)
+      this.Yvalue.push(this.$refs.params.$el.offsetTop)
+      this.Yvalue.push(this.$refs.comment.$el.offsetTop)
+      this.Yvalue.push(this.$refs.recommend.$el.offsetTop)
+      this.Yvalue.push(Number.MAX_VALUE)  //加入一个很大的值
+    },
+    //详情页点击跳转对应位置
     titleClick (index) {
       this.$refs.Scroll.Scroll.scrollTo(0, -this.Yvalue[index], 100)
+    },
+    scroll (position) {
+      //1.获取y值
+      const positionY = -position.y
+      //positionY值与Yvalue比较
+      let length = this.Yvalue.length
+      for (let i = 0; i < length - 1; i++) {  //因为加了一个很大的值 要-1
+        if (this.currentIndex !== i && (positionY >= this.Yvalue[i] && positionY < this.Yvalue[i + 1])) //this.currentIndex = i 便不在判断
+          this.currentIndex = i;
+        this.$refs.nav.currentIndex = this.currentIndex
+      }
+      //判断Backtop是否显示
+      this.showbtn = (-position.y) > 1000 ? true : false
+    },
+    backClick () {
+      this.$refs.Scroll.Scroll.scrollTo(0, 0, 300)
+    },
+    addCart () {
+      //获取购物车需要展示的信息
+      // 1.创建对象
+      const obj = {}
+      // 2.对象信息
+      obj.iid = this.iid;
+      obj.imgURL = this.topImages[0]
+      obj.title = this.goods.title
+      obj.desc = this.goods.desc;
+      obj.newPrice = this.goods.nowPrice;
+      // 3.添加到Store中
+      // this.$store.commit('addCart', obj)
     }
-  },
-
+  }
 }
 
 </script>
@@ -144,11 +184,11 @@ export default {
   background-color: #fff;
 }
 .content {
-  position: absolute;
+  /* position: absolute;
   top: 44px;
   bottom: 0;
   left: 0;
-  right: 0;
-  /* height: calc(100% - 44px); */
+  right: 0; */
+  height: calc(100% - 44px - 58px);
 }
 </style>

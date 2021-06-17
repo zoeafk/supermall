@@ -191,7 +191,7 @@ export default {
 .home-nav {
   position: relative;
   z-index: 9;
-  background-color: var(--color-tint);
+  background-image: linear-gradient(to right, #ed6ea0 0%, #ec8c69 100%);
   color: #fff;
 }
 .tab-control {

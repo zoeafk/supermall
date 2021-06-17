@@ -12,7 +12,7 @@ import BScroll from 'better-scroll'
 export default {
   name: 'Scroll',
   props: {
-    probeType: {
+    probeType: {    //决定是否派发 scroll 事件 默认为0 不派发 0 1 2 3
       type: Number,
       default: 0
     },
