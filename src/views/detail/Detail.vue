@@ -1,6 +1,7 @@
 <template>
   <div id="detail"
        @mousewheel.prevent>
+
     <detail-title class="detail-title"
                   @detailIndex='titleClick'
                   ref="nav"></detail-title>
@@ -73,6 +74,7 @@ export default {
       reverseYvalue: [],
       currentIndex: 0,
       showbtn: false,
+      // product: {}
     }
   },
   created () {
@@ -156,15 +158,16 @@ export default {
     addCart () {
       //获取购物车需要展示的信息
       // 1.创建对象
-      const obj = {}
+      const product = {}
       // 2.对象信息
-      obj.iid = this.iid;
-      obj.imgURL = this.topImages[0]
-      obj.title = this.goods.title
-      obj.desc = this.goods.desc;
-      obj.newPrice = this.goods.nowPrice;
+      product.iid = this.iid;
+      product.imgURL = this.topImages[0]
+      product.title = this.goods.title
+      product.desc = this.goods.desc;
+      product.newPrice = this.goods.nowPrice;
       // 3.添加到Store中
-      // this.$store.commit('addCart', obj)
+      this.$store.dispatch('addCart', product)
+
     }
   }
 }

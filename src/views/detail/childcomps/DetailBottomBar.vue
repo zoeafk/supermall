@@ -41,6 +41,7 @@ export default {
   bottom: 0;
   display: flex;
   text-align: center;
+  z-index: 99;
 }
 
 .bar-item {
